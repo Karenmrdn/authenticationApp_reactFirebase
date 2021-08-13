@@ -3,6 +3,7 @@ import classes from "./AuthForm.module.css";
 import Loader from "../../assets/svg/Loader";
 import authContext from "../../store/auth-context";
 import { useHistory } from "react-router";
+import ErrorBlock from "../Layout/ErrorBlock";
 
 const AuthForm = () => {
   const authCtx = useContext(authContext);
@@ -76,7 +77,11 @@ const AuthForm = () => {
         }
       })
       .then((data) => {
-        authCtx.login(data.idToken);
+        const expirationTime = new Date(
+          new Date().getTime() + +data.expiresIn * 1000
+        );
+
+        authCtx.login(data.idToken, expirationTime.toISOString());
         history.replace("/");
       })
       .catch((error) => setError(error.message));
@@ -99,7 +104,7 @@ const AuthForm = () => {
             required
           />
         </div>
-        {error && <p className={classes.error}>{error}</p>}
+        {error && <ErrorBlock message={error} />}
         <div className={classes.actions}>
           {!isLoading && (
             <button>{isLogin ? "Login" : "Create Account"}</button>
